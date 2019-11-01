@@ -1,0 +1,49 @@
+.mode-radio {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: inline-block;
+    position: relative;
+    background-color: #4682B4;
+    color: white;
+    top: 10px;
+    height: 30px;
+    width: 30px;
+    border: 0;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-right: 7px;
+    outline: none;
+}
+
+.mode-radio:checked::before {
+    position: absolute;
+    font: 13px/1 'Open Sans', sans-serif;
+    left: 11px;
+    top: 7px;
+    content: '\02143';
+    transform: rotate(40deg);
+}
+
+.mode-radio:hover {
+    background-color: #B0C4DE;
+}
+
+.mode-radio:checked {
+    background-color: #4682B4;
+}
+
+.text-mode {
+    font-family: "Arial Black", Gadget, sans-serif;
+    color: white;
+}
+
+label {
+    margin-right: 15px;
+    line-height: 32px;
+    font: 15px/1.7 'Open Sans', sans-serif;
+    color: #333;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    cursor: pointer;
+}

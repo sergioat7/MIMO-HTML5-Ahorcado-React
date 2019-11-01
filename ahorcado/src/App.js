@@ -1,25 +1,36 @@
 import React, { Component } from 'react';
+import GameSelector from './components/GameSelector/GameSelector';
 import './App.css';
 
 class App extends Component {
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      title: "Iniciar partida",
+      gameMode: null
+    }
+    this.title = "Iniciar partida";
+    this.gameMode = "";
+
+    this.resetBoard = this.resetBoard.bind(this);
+  }
+
+  setGameMode = (mode) => {
+    this.setState({ gameMode: mode });
+  }
+
   resetBoard() {
-    console.log("Reset");
+    this.setState({ title: "Hola" });
   }
 
   render() {
     return (
       <div className="App">
         <header>
-          <div>
-            <input type="radio" id="easy" name="mode" className="mode-radio" onClick={this.resetBoard}></input>
-            <label htmlFor="easy" className="text-mode">Fácil</label>
-            <input type="radio" id="medium" name="mode" className="mode-radio" onClick={this.resetBoard}></input>
-            <label htmlFor="medium" className="text-mode">Medio</label>
-            <input type="radio" id="difficult" name="mode" className="mode-radio" onClick={this.resetBoard}></input>
-            <label htmlFor="difficult" className="text-mode">Difícil</label>
-          </div>
-          <h4 id="title">Iniciar partida</h4>
+          <GameSelector setGameMode={this.setGameMode}></GameSelector>
+          <h4 id="title">{this.title}</h4>
         </header>
         <footer>
           <div>
