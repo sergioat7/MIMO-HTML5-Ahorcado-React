@@ -2,7 +2,11 @@ import React, { Component } from 'react';
 import GameSelector from './components/GameSelector/GameSelector.jsx';
 import CharactersBox from './components/CharactersBox/CharactersBox.jsx';
 import Answer from './components/Answer/Answer.jsx';
+import Timer from './components/Timer/Timer.jsx';
 import './App.css';
+
+const EASY_MODE = "easy";
+const MEDIUM_MODE = "medium";
 
 class App extends Component {
 
@@ -13,9 +17,12 @@ class App extends Component {
       restart: true,
       title: "Iniciar partida",
     }
-    this.gameMode = "easy";
+    this.time = 0;
+    this.gameMode = EASY_MODE;
     this.getMovie();
 
+    this.setTimer = this.setTimer.bind(this);
+    this.showAnswer = this.showAnswer.bind(this);
     this.resetBoard = this.resetBoard.bind(this);
   }
 
@@ -27,20 +34,23 @@ class App extends Component {
         return "-";
       });
     });
-    this.setAttemtps();
+    this.initAttemtps();
   }
 
-  setAttemtps() {
+  initAttemtps() {
     var attemtps = 0;
     for (let word of this.words) {
       attemtps += word.length;
     }
-    if (this.gameMode === "easy") {
+    if (this.gameMode === EASY_MODE) {
       attemtps = Math.floor(1.5 * attemtps);
-    } else if (this.gameMode === "medium") {
+      this.time = 0;
+    } else if (this.gameMode === MEDIUM_MODE) {
       attemtps = Math.floor(attemtps);
+      this.time = 2;
     } else {
       attemtps = Math.floor(0.8 * attemtps);
+      this.time = 1;
     }
     this.attemtps = attemtps;
   }
@@ -58,11 +68,10 @@ class App extends Component {
     }
     if (this.gameFinished() === true) {
       title = "Has ganado!";
-      this.attemtps = 0;
+      this.showAnswer();
     } else if (this.attemtps > 0) {
       title = "Te quedan " + this.attemtps + " intentos";
     } else {
-      this.attemtps = 0;
       title = "Has perdido";
       this.showAnswer();
     }
@@ -84,7 +93,16 @@ class App extends Component {
     return success
   }
 
+  setTimer(timeLeft) {
+    if (timeLeft.minutes === 0 && timeLeft.seconds === 0) {
+      this.showAnswer();
+      this.setState({ title: "Has perdido" });
+    }
+  }
+
   showAnswer() {
+    this.attemtps = 0;
+    this.time = 0;
     this.answer = this.words.map((word, i) => {
       return word.split("").map((c, j) => {
         return c;
@@ -118,9 +136,10 @@ class App extends Component {
           <GameSelector setGameMode={this.setGameMode}></GameSelector>
           <h4 id="title">{this.state.title}</h4>
         </header>
-        <section>
+        <section key={this.state.restart}>
+          {this.time > 0 && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
           <Answer key={this.answer} movie={this.movie} answer={this.answer}></Answer>
-          {this.attemtps > 0 && <CharactersBox key={this.state.restart} selectCharacter={this.selectCharacter}></CharactersBox>}
+          {this.attemtps > 0 && <CharactersBox selectCharacter={this.selectCharacter}></CharactersBox>}
         </section>
         <footer>
           <div>
