@@ -12,50 +12,61 @@ class App extends Component {
     this.state = {
       restart: true,
       title: "Iniciar partida",
-      gameMode: null,
-      attemtps: 3,
     }
-    this.movie = this.getMovie();
-    this.words = this.getMovie().split(" ");
-    this.answer = this.words.map((word) => {
-      return word.split("").map(() => {
-        return "-";
-      });
-    });
+    this.gameMode = "easy";
+    this.getMovie();
 
     this.resetBoard = this.resetBoard.bind(this);
   }
 
   getMovie() {
-    return "el señor de los anillos el retorno del rey";
+    this.movie = "el señor de los anillos el retorno del rey";
+    this.words = this.movie.split(" ");
+    this.answer = this.words.map((word) => {
+      return word.split("").map(() => {
+        return "-";
+      });
+    });
+    this.setAttemtps();
+  }
+
+  setAttemtps() {
+    var attemtps = 0;
+    for (let word of this.words) {
+      attemtps += word.length;
+    }
+    if (this.gameMode === "easy") {
+      attemtps = Math.floor(1.5 * attemtps);
+    } else if (this.gameMode === "medium") {
+      attemtps = Math.floor(attemtps);
+    } else {
+      attemtps = Math.floor(0.8 * attemtps);
+    }
+    this.attemtps = attemtps;
   }
 
   setGameMode = (mode) => {
-    this.setState({ gameMode: mode });
+    this.gameMode = mode;
     this.resetBoard();
   }
 
   selectCharacter = (character) => {
     var success = this.checkAnswer(character);
     var title = "";
-    var attemtps = this.state.attemtps;
     if (!success) {
-      attemtps = this.state.attemtps - 1
+      this.attemtps = this.attemtps - 1
     }
     if (this.gameFinished() === true) {
       title = "Has ganado!";
-      attemtps = 0;
-    } else if (attemtps > 0) {
-      title = "Te quedan " + attemtps + " intentos";
+      this.attemtps = 0;
+    } else if (this.attemtps > 0) {
+      title = "Te quedan " + this.attemtps + " intentos";
     } else {
-      attemtps = 0;
+      this.attemtps = 0;
       title = "Has perdido";
       this.showAnswer();
     }
-    this.setState({
-      title: title,
-      attemtps: attemtps
-    });
+    this.setState({ title: title });
   }
 
   checkAnswer(character) {
@@ -95,15 +106,8 @@ class App extends Component {
     this.setState({
       restart: !this.state.restart,
       title: "Iniciar partida",
-      attemtps: 3,
     });
-    this.movie = this.getMovie();
-    this.words = this.getMovie().split(" ");
-    this.answer = this.words.map((word) => {
-      return word.split("").map(() => {
-        return "-";
-      });
-    });
+    this.getMovie();
   }
 
   render() {
@@ -116,7 +120,7 @@ class App extends Component {
         </header>
         <section>
           <Answer key={this.answer} movie={this.movie} answer={this.answer}></Answer>
-          {this.state.attemtps > 0 && <CharactersBox key={this.state.restart} selectCharacter={this.selectCharacter}></CharactersBox>}
+          {this.attemtps > 0 && <CharactersBox key={this.state.restart} selectCharacter={this.selectCharacter}></CharactersBox>}
         </section>
         <footer>
           <div>

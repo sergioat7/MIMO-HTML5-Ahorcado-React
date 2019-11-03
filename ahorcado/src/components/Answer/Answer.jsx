@@ -14,7 +14,7 @@ class Answer extends Component {
 
     getWords() {
         return this.state.words.map((word, i) => {
-            return <ul>{this.getWordLetters(word, i)}<li className="spaceInAnswer" disabled></li></ul>
+            return <ul className="answer">{this.getWordLetters(word, i)}<li className="spaceInAnswer" disabled></li></ul>
         });
     }
 
