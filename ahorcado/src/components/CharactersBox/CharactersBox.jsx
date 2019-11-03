@@ -55,13 +55,13 @@ class CharactersBox extends Component {
 
     getLetters() {
         return this.state.letters.map((letter) => {
-            return <li key={letter.value} disabled={letter.disabled} onClick={this.selectCharacter}>{letter.value}</li>
+            return <li key={letter.value} className="characterSelectable" disabled={letter.disabled} onClick={this.selectCharacter}>{letter.value}</li>
         });
     }
 
     getNumbers() {
         return this.state.numbers.map((number) => {
-            return <li key={number.value} disabled={number.disabled} onClick={this.selectCharacter}>{number.value}</li>
+            return <li key={number.value} className="characterSelectable" disabled={number.disabled} onClick={this.selectCharacter}>{number.value}</li>
         });
     }
 
