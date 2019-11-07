@@ -3,6 +3,7 @@ import GameSelector from './components/GameSelector/GameSelector.jsx';
 import CharactersBox from './components/CharactersBox/CharactersBox.jsx';
 import Answer from './components/Answer/Answer.jsx';
 import Timer from './components/Timer/Timer.jsx';
+import GameImage from './components/GameImage/GameImage.jsx';
 import './App.css';
 
 const EASY_MODE = "easy";
@@ -20,6 +21,7 @@ class App extends Component {
     this.time = 0;
     this.gameMode = EASY_MODE;
     this.getMovie();
+    this.image = "hangman1.png";
 
     this.setTimer = this.setTimer.bind(this);
     this.showAnswer = this.showAnswer.bind(this);
@@ -68,11 +70,14 @@ class App extends Component {
     }
     if (this.gameFinished() === true) {
       title = "Has ganado!";
+      this.image = "game_won.png";
       this.showAnswer();
     } else if (this.attemtps > 0) {
       title = "Te quedan " + this.attemtps + " intentos";
+      this.image = this.setImage();
     } else {
       title = "Has perdido";
+      this.image = "game_lost.png";
       this.showAnswer();
     }
     this.setState({ title: title });
@@ -93,8 +98,26 @@ class App extends Component {
     return success
   }
 
+  setImage() {
+    var totalAttemtps = 0;
+    for (let word of this.words) {
+      totalAttemtps += word.length;
+    }
+    if (this.gameMode === EASY_MODE) {
+      totalAttemtps = Math.floor(1.5 * totalAttemtps);
+    } else if (this.gameMode === MEDIUM_MODE) {
+      totalAttemtps = Math.floor(totalAttemtps);
+    } else {
+      totalAttemtps = Math.floor(0.8 * totalAttemtps);
+    }
+    var groups = Math.ceil(totalAttemtps / 6);
+    var imageID = 6 - Math.floor(this.attemtps / groups);
+    return "hangman"+imageID+".png";
+  }
+
   setTimer(timeLeft) {
     if (timeLeft.minutes === 0 && timeLeft.seconds === 0) {
+      this.image = "game_lost.png";
       this.showAnswer();
       this.setState({ title: "Has perdido" });
     }
@@ -121,6 +144,7 @@ class App extends Component {
   }
 
   resetBoard() {
+    this.image = "hangman1.png";
     this.setState({
       restart: !this.state.restart,
       title: "Iniciar partida",
@@ -137,6 +161,7 @@ class App extends Component {
           <h4 id="title">{this.state.title}</h4>
         </header>
         <section key={this.state.restart}>
+          <GameImage key={this.image} imagePath={this.image}></GameImage>
           {this.time > 0 && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
           <Answer key={this.answer} movie={this.movie} answer={this.answer}></Answer>
           {this.attemtps > 0 && <CharactersBox selectCharacter={this.selectCharacter}></CharactersBox>}
