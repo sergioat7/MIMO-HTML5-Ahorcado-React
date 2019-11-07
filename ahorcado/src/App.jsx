@@ -22,7 +22,11 @@ class App extends Component {
     this.gameMode = EASY_MODE;
     this.getMovie();
     this.image = "hangman1.png";
+    this.saveGameData();
+    this.saveGameTime(2, 0);
 
+    this.saveGameData = this.saveGameData.bind(this);
+    this.saveGameTime = this.saveGameTime.bind(this);
     this.setTimer = this.setTimer.bind(this);
     this.showAnswer = this.showAnswer.bind(this);
     this.resetBoard = this.resetBoard.bind(this);
@@ -80,7 +84,7 @@ class App extends Component {
       this.image = "game_lost.png";
       this.showAnswer();
     }
-    this.setState({ title: title });
+    this.setState({ title: title }, this.saveGameData);
   }
 
   checkAnswer(character) {
@@ -112,10 +116,11 @@ class App extends Component {
     }
     var groups = Math.ceil(totalAttemtps / 6);
     var imageID = 6 - Math.floor(this.attemtps / groups);
-    return "hangman"+imageID+".png";
+    return "hangman" + imageID + ".png";
   }
 
   setTimer(timeLeft) {
+    this.saveGameTime(timeLeft.minutes, timeLeft.seconds);
     if (timeLeft.minutes === 0 && timeLeft.seconds === 0) {
       this.image = "game_lost.png";
       this.showAnswer();
@@ -150,6 +155,21 @@ class App extends Component {
       title: "Iniciar partida",
     });
     this.getMovie();
+    this.saveGameData();
+    this.saveGameTime(2, 0);
+  }
+
+  saveGameData() {
+    localStorage.setItem('title', this.state.title);
+    localStorage.setItem('gameMode', this.gameMode);
+    localStorage.setItem('movie', this.movie);
+    localStorage.setItem('answer', this.answer);
+    localStorage.setItem('image', this.image);
+  }
+
+  saveGameTime(minutes, seconds) {
+    localStorage.setItem('time-minutes', minutes);
+    localStorage.setItem('time-seconds', seconds);
   }
 
   render() {
