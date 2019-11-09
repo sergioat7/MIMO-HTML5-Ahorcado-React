@@ -6,6 +6,8 @@ class GameSelector extends Component {
     constructor(props) {
         super(props);
 
+        this.gameMode = props.gameMode;
+
         this.changeGameMode = this.changeGameMode.bind(this);
     }
 
@@ -14,13 +16,16 @@ class GameSelector extends Component {
     }
 
     render() {
+        let easyInput = this.gameMode === "easy" ? <input type="radio" id="easy" name="mode" className="mode-radio" onClick={this.changeGameMode} defaultChecked /> : <input type="radio" id="easy" name="mode" className="mode-radio" onClick={this.changeGameMode} />
+        let mediumInput = this.gameMode === "medium" ? <input type="radio" id="medium" name="mode" className="mode-radio" onClick={this.changeGameMode} defaultChecked /> : <input type="radio" id="medium" name="mode" className="mode-radio" onClick={this.changeGameMode} />
+        let difficultInput = this.gameMode === "difficult" ? <input type="radio" id="difficult" name="mode" className="mode-radio" onClick={this.changeGameMode} defaultChecked /> : <input type="radio" id="difficult" name="mode" className="mode-radio" onClick={this.changeGameMode} />
         return (
             <div>
-                <input type="radio" id="easy" name="mode" className="mode-radio" onClick={this.changeGameMode} defaultChecked />
+                {easyInput}
                 <label htmlFor="easy" className="text-mode">Fácil</label>
-                <input type="radio" id="medium" name="mode" className="mode-radio" onClick={this.changeGameMode} />
+                {mediumInput}
                 <label htmlFor="medium" className="text-mode">Medio</label>
-                <input type="radio" id="difficult" name="mode" className="mode-radio" onClick={this.changeGameMode} />
+                {difficultInput}
                 <label htmlFor="difficult" className="text-mode">Difícil</label>
             </div>
         );

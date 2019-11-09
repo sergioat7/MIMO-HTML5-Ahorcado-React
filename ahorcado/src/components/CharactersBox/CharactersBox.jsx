@@ -49,8 +49,22 @@ class CharactersBox extends Component {
                 { value: "9", disabled: false }
             ]
         }
+        this.setCharactersSelected(props.charactersSelected);
 
         this.selectCharacter = this.selectCharacter.bind(this);
+    }
+
+    setCharactersSelected(charactersSelected) {
+        for (let letter of this.state.letters) {
+            if (charactersSelected.includes(letter.value)) {
+                letter.disabled = true;
+            }
+        }
+        for (let number of this.state.numbers) {
+            if (charactersSelected.includes(number.value)) {
+                number.disabled = true;
+            }
+        }
     }
 
     getLetters() {
