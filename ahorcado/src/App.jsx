@@ -1,14 +1,17 @@
 import React, { Component } from 'react';
-import GameSelector from './components/GameSelector/GameSelector.jsx';
-import CharactersBox from './components/CharactersBox/CharactersBox.jsx';
 import Answer from './components/Answer/Answer.jsx';
-import Timer from './components/Timer/Timer.jsx';
+import CharactersBox from './components/CharactersBox/CharactersBox.jsx';
 import GameImage from './components/GameImage/GameImage.jsx';
+import GameSelector from './components/GameSelector/GameSelector.jsx';
+import Timer from './components/Timer/Timer.jsx';
+import UsernameInput from './components/UsernameInput/UsernameInput.jsx';
+
 import moviesJSON from './assets/movies';
 import './App.css';
 
 const EASY_MODE = "easy";
 const MEDIUM_MODE = "medium";
+const DIFFICULT_MODE = "difficult";
 const movies = moviesJSON.movies;
 
 class App extends Component {
@@ -16,13 +19,16 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    var title = this.getGameData();
+    var title = this.getUsername();
     this.state = {
       restart: true,
       title: title,
     }
-    this.saveGameData();
+    if (this.username !== "") {
+      this.saveGameData();
+    }
 
+    this.changeUsername = this.changeUsername.bind(this);
     this.saveGameData = this.saveGameData.bind(this);
     this.saveGameTime = this.saveGameTime.bind(this);
     this.setTimer = this.setTimer.bind(this);
@@ -30,9 +36,25 @@ class App extends Component {
     this.resetBoard = this.resetBoard.bind(this);
   }
 
+  getUsername() {
+    var username = localStorage.getItem('username');
+    if (username != null) {
+      this.username = username;
+      return this.getGameData();
+    } else {
+      this.username = "";
+      this.gameMode = EASY_MODE;
+      this.answer = [];
+      this.image = "";
+      this.attempts = 0;
+      this.time = { minutes: 0, seconds: 0 }
+      return "Escribe tu usuario";
+    }
+  }
+
   getGameData() {
     var title = "Iniciar partida";
-    var data = JSON.parse(localStorage.getItem('data'));
+    var data = JSON.parse(localStorage.getItem('data-' + this.username));
     if (data !== null) {
       title = data.title;
       this.gameMode = data.gameMode;
@@ -45,13 +67,13 @@ class App extends Component {
       this.gameMode = EASY_MODE;
       this.generateData();
     }
-    var attempts = localStorage.getItem('attempts');
+    var attempts = localStorage.getItem('attempts-' + this.username);
     if (attempts !== null) {
       this.attempts = parseInt(attempts)
     } else {
       this.initAttempts();
     }
-    var timeData = JSON.parse(localStorage.getItem('timeData'));
+    var timeData = JSON.parse(localStorage.getItem('timeData-' + this.username));
     if (timeData !== null) {
       this.time = { minutes: timeData.minutes, seconds: timeData.seconds };
     } else {
@@ -69,8 +91,9 @@ class App extends Component {
       'image': this.image,
       'charactersSelected': this.charactersSelected
     };
-    localStorage.setItem('data', JSON.stringify(data));
-    localStorage.setItem('attempts', this.attempts);
+    localStorage.setItem('data-' + this.username, JSON.stringify(data));
+    localStorage.setItem('attempts-' + this.username, this.attempts);
+    localStorage.setItem('username', this.username);
   }
 
   saveGameTime(minutes, seconds) {
@@ -78,7 +101,7 @@ class App extends Component {
       'minutes': minutes,
       'seconds': seconds
     };
-    localStorage.setItem('timeData', JSON.stringify(timeData));
+    localStorage.setItem('timeData-' + this.username, JSON.stringify(timeData));
   }
 
   generateData() {
@@ -102,25 +125,30 @@ class App extends Component {
     for (let word of this.words) {
       attempts += word.length;
     }
-    if (this.gameMode === EASY_MODE) {
-      attempts = Math.floor(1.5 * attempts);
+    if (this.gameMode === DIFFICULT_MODE) {
+      attempts = Math.floor(0.8 * attempts);
     } else if (this.gameMode === MEDIUM_MODE) {
       attempts = Math.floor(attempts);
     } else {
-      attempts = Math.floor(0.8 * attempts);
+      attempts = Math.floor(1.5 * attempts);
     }
     this.attempts = attempts;
   }
 
   initTime() {
-    if (this.gameMode === EASY_MODE) {
-      this.time = { minutes: 0, seconds: 0 }
+    if (this.gameMode === DIFFICULT_MODE) {
+      this.time = { minutes: 1, seconds: 0 }
     } else if (this.gameMode === MEDIUM_MODE) {
       this.time = { minutes: 2, seconds: 0 }
     } else {
-      this.time = { minutes: 1, seconds: 0 }
+      this.time = { minutes: 0, seconds: 0 }
     }
     this.saveGameTime(this.time.minutes, this.time.seconds);
+  }
+
+  changeUsername(username) {
+    this.username = username;
+    this.resetBoard();
   }
 
   setGameMode = (mode) => {
@@ -170,12 +198,12 @@ class App extends Component {
     for (let word of this.words) {
       totalAttempts += word.length;
     }
-    if (this.gameMode === EASY_MODE) {
-      totalAttempts = Math.floor(1.5 * totalAttempts);
+    if (this.gameMode === DIFFICULT_MODE) {
+      totalAttempts = Math.floor(0.8 * totalAttempts);
     } else if (this.gameMode === MEDIUM_MODE) {
       totalAttempts = Math.floor(totalAttempts);
     } else {
-      totalAttempts = Math.floor(0.8 * totalAttempts);
+      totalAttempts = Math.floor(1.5 * totalAttempts);
     }
     var groups = Math.ceil(totalAttempts / 6);
     var imageID = 6 - Math.floor(this.attempts / groups);
@@ -228,19 +256,20 @@ class App extends Component {
       <div className="App">
         <header>
           <h1>El Ahorcado</h1>
-          <GameSelector gameMode={this.gameMode} setGameMode={this.setGameMode}></GameSelector>
+          {this.username !== "" && <GameSelector gameMode={this.gameMode} setGameMode={this.setGameMode}></GameSelector>}
           <h4 id="title">{this.state.title}</h4>
         </header>
         <section key={this.state.restart}>
-          <GameImage key={this.image} imagePath={this.image}></GameImage>
+          {this.image !== "" && <GameImage key={this.image} imagePath={this.image}></GameImage>}
           {(this.time.minutes > 0 || this.time.seconds > 0) && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
-          <Answer key={this.answer} movie={this.movie} answer={this.answer}></Answer>
+          {this.answer.length > 0 && <Answer key={this.answer} movie={this.movie} answer={this.answer}></Answer>}
           {this.attempts > 0 && <CharactersBox charactersSelected={this.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
         </section>
         <footer>
           <div>
-            <button className="btn btn-warning" name="restart_game" type="button" onClick={this.resetBoard}>Reiniciar partida</button>
+            {this.username !== "" && <button className="btn btn-warning" name="restart_game" type="button" onClick={this.resetBoard}>Reiniciar partida</button>}
           </div>
+          <UsernameInput username={this.username} changeUsername={this.changeUsername}></UsernameInput>
         </footer>
       </div>
     );
