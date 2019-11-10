@@ -13,6 +13,8 @@ const EASY_MODE = "easy";
 const MEDIUM_MODE = "medium";
 const DIFFICULT_MODE = "difficult";
 const movies = moviesJSON.movies;
+const VICTORY = 0;
+const DEFEAT = 1;
 
 class App extends Component {
 
@@ -82,28 +84,6 @@ class App extends Component {
     return title;
   }
 
-  saveGameData() {
-    var data = {
-      'title': this.state.title,
-      'gameMode': this.gameMode,
-      'movie': this.movie,
-      'answer': this.answer,
-      'image': this.image,
-      'charactersSelected': this.charactersSelected
-    };
-    localStorage.setItem('data-' + this.username, JSON.stringify(data));
-    localStorage.setItem('attempts-' + this.username, this.attempts);
-    localStorage.setItem('username', this.username);
-  }
-
-  saveGameTime(minutes, seconds) {
-    var timeData = {
-      'minutes': minutes,
-      'seconds': seconds
-    };
-    localStorage.setItem('timeData-' + this.username, JSON.stringify(timeData));
-  }
-
   generateData() {
     this.getMovie();
     this.image = "hangman1.png";
@@ -166,14 +146,14 @@ class App extends Component {
     if (this.gameFinished() === true) {
       title = "Has ganado!";
       this.image = "game_won.png";
-      this.showAnswer();
+      this.showAnswer(VICTORY);
     } else if (this.attempts > 0) {
       title = "Te quedan " + this.attempts + " intentos";
       this.image = this.setImage();
     } else {
       title = "Has perdido";
       this.image = "game_lost.png";
-      this.showAnswer();
+      this.showAnswer(DEFEAT);
     }
     this.setState({ title: title }, this.saveGameData);
   }
@@ -215,11 +195,11 @@ class App extends Component {
     if (timeLeft.minutes === 0 && timeLeft.seconds === 0) {
       this.setState({ title: "Has perdido" });
       this.image = "game_lost.png";
-      this.showAnswer();
+      this.showAnswer(DEFEAT);
     }
   }
 
-  showAnswer() {
+  showAnswer(result) {
     this.attempts = 0;
     this.time = { minutes: 0, seconds: 0 };
     this.answer = this.words.map((word, i) => {
@@ -228,6 +208,7 @@ class App extends Component {
       });
     });
     this.saveGameData();
+    this.saveRanking(result);
   }
 
   gameFinished() {
@@ -238,6 +219,50 @@ class App extends Component {
       }
     }
     return gameFinished;
+  }
+
+  saveGameData() {
+    var data = {
+      'title': this.state.title,
+      'gameMode': this.gameMode,
+      'movie': this.movie,
+      'answer': this.answer,
+      'image': this.image,
+      'charactersSelected': this.charactersSelected
+    };
+    localStorage.setItem('data-' + this.username, JSON.stringify(data));
+    localStorage.setItem('attempts-' + this.username, this.attempts);
+    localStorage.setItem('username', this.username);
+  }
+
+  saveRanking(result) {
+    var ranking = JSON.parse(localStorage.getItem('ranking'));
+    if (ranking === null) {
+      ranking = [];
+    }
+    var userData = {
+      'username': this.username,
+      'victories': result === VICTORY ? 1 : 0,
+      'defeats': result === DEFEAT ? 1 : 0
+    };
+    ranking = ranking.filter( (r) => {
+      if (r.username === this.username) {
+        userData = r;
+        if (result === VICTORY) { userData.victories++; }
+        if (result === DEFEAT) { userData.defeats++; }
+      }
+      return r.username !== this.username;
+  });
+    ranking.push(userData);
+    localStorage.setItem('ranking', JSON.stringify(ranking));
+  }
+
+  saveGameTime(minutes, seconds) {
+    var timeData = {
+      'minutes': minutes,
+      'seconds': seconds
+    };
+    localStorage.setItem('timeData-' + this.username, JSON.stringify(timeData));
   }
 
   resetBoard() {
