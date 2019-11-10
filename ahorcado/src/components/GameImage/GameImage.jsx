@@ -10,7 +10,7 @@ class GameImage extends Component {
     render() {
         return (
             <div>
-                <img src={require('../../assets/'+this.imagePath)} alt="hangman_image" width="300px" height="300px"/>
+                <img src={require('../../assets/images/'+this.imagePath)} alt="hangman_image" width="300px" height="300px"/>
             </div>
         );
     }

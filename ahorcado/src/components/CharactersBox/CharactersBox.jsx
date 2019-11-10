@@ -37,6 +37,7 @@ class CharactersBox extends Component {
                 { value: "z", disabled: false }
             ],
             numbers: [
+                { value: "&", disabled: false },
                 { value: "0", disabled: false },
                 { value: "1", disabled: false },
                 { value: "2", disabled: false },
@@ -61,7 +62,7 @@ class CharactersBox extends Component {
             }
         }
         for (let number of this.state.numbers) {
-            if (charactersSelected.includes(number.value)) {
+            if (charactersSelected.includes(number.value) || (number.value === "&" && charactersSelected.includes("&amp;"))) {
                 number.disabled = true;
             }
         }
@@ -88,7 +89,7 @@ class CharactersBox extends Component {
             return letter;
         }));
         var numbers = this.state.numbers.map((number => {
-            if (number.value === target.innerHTML) {
+            if (number.value === target.innerHTML || (number.value === "&" && target.innerHTML === "&amp;")) {
                 number.disabled = true;
             }
             return number;

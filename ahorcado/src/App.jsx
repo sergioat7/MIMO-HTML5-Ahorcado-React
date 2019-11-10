@@ -4,10 +4,12 @@ import CharactersBox from './components/CharactersBox/CharactersBox.jsx';
 import Answer from './components/Answer/Answer.jsx';
 import Timer from './components/Timer/Timer.jsx';
 import GameImage from './components/GameImage/GameImage.jsx';
+import moviesJSON from './assets/movies';
 import './App.css';
 
 const EASY_MODE = "easy";
 const MEDIUM_MODE = "medium";
+const movies = moviesJSON.movies;
 
 class App extends Component {
 
@@ -85,7 +87,7 @@ class App extends Component {
   }
 
   getMovie() {
-    this.movie = "el señor de los anillos el retorno del rey";
+    this.movie = movies[Math.floor(Math.random() * movies.length)];
     this.words = this.movie.split(" ");
     this.answer = this.words.map((word) => {
       return word.split("").map(() => {
