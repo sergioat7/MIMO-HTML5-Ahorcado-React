@@ -22,4 +22,4 @@ HANGMAN game created with React
 - Every game will be save associated to the player's name. A ranking with all the players will be visualized, ordered descending by won games.
 
 
-![Alt text](./ahorcado/src/assets/images/image.png "Title")
+![alt text](./ahorcado/src/assets/images/image.png)
