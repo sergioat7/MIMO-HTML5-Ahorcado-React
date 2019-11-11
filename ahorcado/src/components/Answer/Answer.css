@@ -1,5 +1,8 @@
 .answer {
   display: inline-block;
+  padding: 0;
+  text-align: center;
+  margin: 20px 0;
 }
 
 .characterInAnswer {
@@ -9,11 +12,19 @@
   font-weight: bold;
   display: inline-block;
   border-bottom: 1px solid white;
+  margin: 5px;
+  text-transform: uppercase;
+  color: white;
+  display: inline-block;
 }
 
 .spaceInAnswer {
   width: 15px;
   height: 15px;
+  display: inline-block;
+  margin: 5px;
+  text-transform: uppercase;
+  color: white;
   display: inline-block;
 }
 

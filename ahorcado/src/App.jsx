@@ -3,6 +3,7 @@ import Answer from './components/Answer/Answer.jsx';
 import CharactersBox from './components/CharactersBox/CharactersBox.jsx';
 import GameImage from './components/GameImage/GameImage.jsx';
 import GameSelector from './components/GameSelector/GameSelector.jsx';
+import RankingList from './components/RankingList/RankingList.jsx';
 import Timer from './components/Timer/Timer.jsx';
 import UsernameInput from './components/UsernameInput/UsernameInput.jsx';
 
@@ -29,6 +30,7 @@ class App extends Component {
     if (this.username !== "") {
       this.saveGameData();
     }
+    this.getRankingList();
 
     this.changeUsername = this.changeUsername.bind(this);
     this.saveGameData = this.saveGameData.bind(this);
@@ -37,6 +39,8 @@ class App extends Component {
     this.showAnswer = this.showAnswer.bind(this);
     this.resetBoard = this.resetBoard.bind(this);
   }
+
+  //MARK: Obtención inicial de datos
 
   getUsername() {
     var username = localStorage.getItem('username');
@@ -84,6 +88,16 @@ class App extends Component {
     return title;
   }
 
+  getRankingList() {
+    var ranking = JSON.parse(localStorage.getItem('ranking'));
+    if (ranking === null) {
+      ranking = [];
+    }
+    this.rankingList = ranking;
+  }
+
+  //MARK: Generación inicial de datos
+
   generateData() {
     this.getMovie();
     this.image = "hangman1.png";
@@ -126,9 +140,12 @@ class App extends Component {
     this.saveGameTime(this.time.minutes, this.time.seconds);
   }
 
+  //MARK: Funciones del juego
+
   changeUsername(username) {
     this.username = username;
-    this.resetBoard();
+    localStorage.setItem('username', this.username);
+    this.setState({ title: this.getGameData() });
   }
 
   setGameMode = (mode) => {
@@ -187,7 +204,7 @@ class App extends Component {
     }
     var groups = Math.ceil(totalAttempts / 6);
     var imageID = 6 - Math.floor(this.attempts / groups);
-    return "hangman" + imageID + ".png";
+    return "hangman" + Math.max(1,imageID) + ".png";
   }
 
   setTimer(timeLeft) {
@@ -221,6 +238,8 @@ class App extends Component {
     return gameFinished;
   }
 
+  //MARK: Funciones de guardado de datos del juego
+
   saveGameData() {
     var data = {
       'title': this.state.title,
@@ -245,16 +264,17 @@ class App extends Component {
       'victories': result === VICTORY ? 1 : 0,
       'defeats': result === DEFEAT ? 1 : 0
     };
-    ranking = ranking.filter( (r) => {
+    ranking = ranking.filter((r) => {
       if (r.username === this.username) {
         userData = r;
         if (result === VICTORY) { userData.victories++; }
         if (result === DEFEAT) { userData.defeats++; }
       }
       return r.username !== this.username;
-  });
+    });
     ranking.push(userData);
     localStorage.setItem('ranking', JSON.stringify(ranking));
+    this.rankingList = ranking;
   }
 
   saveGameTime(minutes, seconds) {
@@ -264,6 +284,8 @@ class App extends Component {
     };
     localStorage.setItem('timeData-' + this.username, JSON.stringify(timeData));
   }
+
+  //MARK: Función de reinicio el juego
 
   resetBoard() {
     this.setState({
@@ -281,7 +303,8 @@ class App extends Component {
       <div className="App">
         <header>
           <h1>El Ahorcado</h1>
-          {this.username !== "" && <GameSelector gameMode={this.gameMode} setGameMode={this.setGameMode}></GameSelector>}
+          <UsernameInput username={this.username} changeUsername={this.changeUsername}></UsernameInput>
+          {this.username !== "" && <GameSelector key={this.gameMode} gameMode={this.gameMode} setGameMode={this.setGameMode}></GameSelector>}
           <h4 id="title">{this.state.title}</h4>
         </header>
         <section key={this.state.restart}>
@@ -294,7 +317,7 @@ class App extends Component {
           <div>
             {this.username !== "" && <button className="btn btn-warning" name="restart_game" type="button" onClick={this.resetBoard}>Reiniciar partida</button>}
           </div>
-          <UsernameInput username={this.username} changeUsername={this.changeUsername}></UsernameInput>
+          <RankingList key={this.rankingList} rankingList={this.rankingList}></RankingList>
         </footer>
       </div>
     );

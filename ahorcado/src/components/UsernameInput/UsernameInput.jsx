@@ -5,28 +5,31 @@ class UsernameInput extends Component {
 
     constructor(props) {
         super(props);
-        this.username = props.username;
+
+        this.state = {
+            username: props.username
+        };
 
         this.updateInputValue = this.updateInputValue.bind(this);
         this.changeUsername = this.changeUsername.bind(this);
     }
 
     updateInputValue(event) {
-        this.username = event.target.value;
+        this.setState({username: event.target.value});
     }
 
-    changeUsername(event) {
-        if (this.username !== "") {
-            this.props.changeUsername(this.username);
+    changeUsername() {
+        if (this.state.username !== "") {
+            this.props.changeUsername(this.state.username);
         }
     }
 
     render() {
         return (
-            <div className="input-group mb-3" id="username-field">
-                <input type="text" className="form-control" aria-label="Username" aria-describedby="button-addon2" onChange={this.updateInputValue} placeholder="Username" />
-                <button className="btn btn-primary" type="button" id="button-addon2" onClick={this.changeUsername}>Button</button>
-            </div>
+            <form className="input-group mb-3" id="username-form" onSubmit={this.changeUsername}>
+                <input type="text" className="form-control" aria-label="Username" aria-describedby="button-addon2" onChange={this.updateInputValue} placeholder="Usuario" value={this.state.username} />
+                <button className="btn btn-primary" type="submit" id="button-addon2" onClick={this.changeUsername}>Aceptar</button>
+            </form>
         );
     }
 }

@@ -19,18 +19,11 @@ body {
 
 div {
   text-align: center;
-  margin: 20px 0;
+  margin: 20px auto;
 }
 
 ul {
   padding: 0;
   text-align: center;
-  margin: 20px 0;
-}
-
-li {
-  margin: 5px;
-  text-transform: uppercase;
-  color: white;
-  display: inline-block;
+  margin: 20px auto;
 }

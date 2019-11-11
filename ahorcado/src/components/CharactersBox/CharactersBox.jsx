@@ -50,7 +50,6 @@ class CharactersBox extends Component {
                 { value: "9", disabled: false }
             ]
         }
-        this.setCharactersSelected(props.charactersSelected);
 
         this.selectCharacter = this.selectCharacter.bind(this);
     }
@@ -59,11 +58,15 @@ class CharactersBox extends Component {
         for (let letter of this.state.letters) {
             if (charactersSelected.includes(letter.value)) {
                 letter.disabled = true;
+            } else {
+                letter.disabled = false;
             }
         }
         for (let number of this.state.numbers) {
             if (charactersSelected.includes(number.value) || (number.value === "&" && charactersSelected.includes("&amp;"))) {
                 number.disabled = true;
+            } else {
+                number.disabled = false;
             }
         }
     }
@@ -102,6 +105,7 @@ class CharactersBox extends Component {
     }
 
     render() {
+        this.setCharactersSelected(this.props.charactersSelected);
         return (
             <div>
                 <ul>
