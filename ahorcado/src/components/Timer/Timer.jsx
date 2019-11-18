@@ -7,37 +7,26 @@ class Timer extends Component {
         super(props);
 
         this.state = {
-            minutes: props.time.minutes,
-            seconds: props.time.seconds
+            time: props.time
         }
     }
 
     componentDidMount() {
         this.myInterval = setInterval(() => {
-            const { seconds, minutes } = this.state
-
-            if (seconds > 0) {
-                this.setState(({ seconds }) => ({
-                    seconds: seconds - 1
+            var time = this.state.time
+            if (time > 0) {
+                this.setState(({ time }) => ({
+                    time: time - 1
                 }))
+            } else {
+                clearInterval(this.myInterval);
             }
-            if (seconds === 0) {
-                if (minutes === 0) {
-                    clearInterval(this.myInterval)
-                } else {
-                    this.setState(({ minutes }) => ({
-                        minutes: minutes - 1,
-                        seconds: 59
-                    }))
-                }
-            }
-
-            this.timeChanges(this.state);
+            this.timeChanges(this.state.time);
         }, 1000)
     }
 
     componentWillUnmount() {
-        clearInterval(this.myInterval)
+        clearInterval(this.myInterval);
     }
 
     timeChanges(timeLeft) {
@@ -45,10 +34,11 @@ class Timer extends Component {
     }
 
     render() {
-        const { minutes, seconds } = this.state
+        var minutes = Math.floor(this.state.time / 60);
+        var seconds = this.state.time - minutes * 60;
         return (
             <div>
-                { (minutes > 0 || seconds > 0) && <h5>Tiempo restante: {minutes}:{seconds < 10 ? `0${seconds}` : seconds}</h5> }
+                { this.state.time > 0 && <h5>Tiempo restante: {minutes}:{seconds < 10 ? `0${seconds}` : seconds}</h5> }
             </div>
         )
     }

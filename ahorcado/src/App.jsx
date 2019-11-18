@@ -53,7 +53,7 @@ class App extends Component {
       this.answer = [];
       this.image = "";
       this.attempts = 0;
-      this.time = { minutes: 0, seconds: 0 }
+      this.time = 0;
       return "Escribe tu usuario";
     }
   }
@@ -79,9 +79,9 @@ class App extends Component {
     } else {
       this.initAttempts();
     }
-    var timeData = JSON.parse(localStorage.getItem('timeData-' + this.username));
+    var timeData = localStorage.getItem('timeData-' + this.username);
     if (timeData !== null) {
-      this.time = { minutes: timeData.minutes, seconds: timeData.seconds };
+      this.time = timeData;
     } else {
       this.initTime();
     }
@@ -131,13 +131,13 @@ class App extends Component {
 
   initTime() {
     if (this.gameMode === DIFFICULT_MODE) {
-      this.time = { minutes: 1, seconds: 0 }
+      this.time = 60;
     } else if (this.gameMode === MEDIUM_MODE) {
-      this.time = { minutes: 2, seconds: 0 }
+      this.time = 120;
     } else {
-      this.time = { minutes: 0, seconds: 0 }
+      this.time = 0;
     }
-    this.saveGameTime(this.time.minutes, this.time.seconds);
+    this.saveGameTime(this.time);
   }
 
   //MARK: Funciones del juego
@@ -208,8 +208,8 @@ class App extends Component {
   }
 
   setTimer(timeLeft) {
-    this.saveGameTime(timeLeft.minutes, timeLeft.seconds);
-    if (timeLeft.minutes === 0 && timeLeft.seconds === 0) {
+    this.saveGameTime(timeLeft);
+    if (timeLeft === 0) {
       this.setState({ title: "Has perdido" });
       this.image = "game_lost.png";
       this.showAnswer(DEFEAT);
@@ -218,7 +218,7 @@ class App extends Component {
 
   showAnswer(result) {
     this.attempts = 0;
-    this.time = { minutes: 0, seconds: 0 };
+    this.time = 0;
     this.answer = this.words.map((word, i) => {
       return word.split("").map((c, j) => {
         return c;
@@ -277,12 +277,8 @@ class App extends Component {
     this.rankingList = ranking;
   }
 
-  saveGameTime(minutes, seconds) {
-    var timeData = {
-      'minutes': minutes,
-      'seconds': seconds
-    };
-    localStorage.setItem('timeData-' + this.username, JSON.stringify(timeData));
+  saveGameTime(timeLeft) {
+    localStorage.setItem('time-' + this.username, timeLeft);
   }
 
   //MARK: Función de reinicio el juego
@@ -309,7 +305,7 @@ class App extends Component {
         </header>
         <section key={this.state.restart}>
           {this.image !== "" && <GameImage key={this.image} imagePath={this.image}></GameImage>}
-          {(this.time.minutes > 0 || this.time.seconds > 0) && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
+          {this.time > 0 && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
           {this.answer.length > 0 && <Answer key={this.answer} movie={this.movie} answer={this.answer}></Answer>}
           {this.attempts > 0 && <CharactersBox charactersSelected={this.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
         </section>

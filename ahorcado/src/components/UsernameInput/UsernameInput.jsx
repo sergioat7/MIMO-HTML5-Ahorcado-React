@@ -18,7 +18,8 @@ class UsernameInput extends Component {
         this.setState({username: event.target.value});
     }
 
-    changeUsername() {
+    changeUsername(event) {
+        event.preventDefault();
         if (this.state.username !== "") {
             this.props.changeUsername(this.state.username);
         }
