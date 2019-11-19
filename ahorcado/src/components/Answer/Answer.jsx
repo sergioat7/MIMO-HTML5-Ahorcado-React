@@ -21,9 +21,7 @@ class Answer extends Component {
     getWordLetters(word, i) {
         var letters = word.split("");
         return letters.map((letter, j) => {
-            return <li key={[i]+[j]} className="characterInAnswer" disabled>
-                {this.state.answer[i][j] === "-" ? <span>{letter}</span> : <span className="visible">{letter}</span> }
-            </li>
+            return this.state.answer[i][j] === "-" ? <li key={[i]+[j]} className="characterInAnswer" disabled></li> : <li key={[i]+[j]} className="characterInAnswer" disabled>{letter}</li>
         });
     }
 
