@@ -4,7 +4,7 @@ import './RankingList.css';
 class RankingList extends Component {
 
     getOrderedList() {
-        this.rankingList.sort( (a, b) => {
+        this.props.rankingList.sort( (a, b) => {
             if (a.victories > b.victories) {
                 return -1;
             }
@@ -15,7 +15,7 @@ class RankingList extends Component {
         });
         return (
             <tbody>
-                {this.rankingList.map((user, index) => {
+                {this.props.rankingList.map((user, index) => {
                     return (
                         <tr key={user.username}>
                             <th scope="row">{index}</th>
@@ -29,7 +29,6 @@ class RankingList extends Component {
     }
 
     render() {
-        this.rankingList = this.props.rankingList;
         return (
             <div id="rankingContainer">
                 <table className="table">
