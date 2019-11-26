@@ -22,10 +22,11 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    var title = this.getUsername();
+    var initialState = this.getUsername();
     this.state = {
       restart: true,
-      title: title,
+      title: initialState.title,
+      attempts: initialState.attempts,
     }
     if (this.username !== "") {
       this.saveGameData();
@@ -52,9 +53,8 @@ class App extends Component {
       this.gameMode = EASY_MODE;
       this.answer = [];
       this.image = "";
-      this.attempts = 0;
       this.time = 0;
-      return "Escribe tu usuario";
+      return { title: "Escribe tu usuario", attempts: 0 };
     }
   }
 
@@ -73,11 +73,12 @@ class App extends Component {
       this.gameMode = EASY_MODE;
       this.generateData();
     }
-    var attempts = localStorage.getItem('attempts-' + this.username);
-    if (attempts !== null) {
-      this.attempts = parseInt(attempts)
+    var attempts = 0;
+    var attemptsStorage = localStorage.getItem('attempts-' + this.username);
+    if (attemptsStorage !== null) {
+      attempts = parseInt(attemptsStorage);
     } else {
-      this.initAttempts();
+      attempts = this.initAttempts();
     }
     var timeData = localStorage.getItem('timeData-' + this.username);
     if (timeData !== null) {
@@ -85,7 +86,7 @@ class App extends Component {
     } else {
       this.initTime();
     }
-    return title;
+    return { title: title, attempts: attempts };
   }
 
   getRankingList() {
@@ -126,7 +127,7 @@ class App extends Component {
     } else {
       attempts = Math.floor(1.5 * attempts);
     }
-    this.attempts = attempts;
+    return attempts;
   }
 
   initTime() {
@@ -145,7 +146,7 @@ class App extends Component {
   changeUsername(username) {
     this.username = username;
     localStorage.setItem('username', this.username);
-    this.setState({ title: this.getGameData() });
+    this.setState(this.getGameData());
   }
 
   setGameMode = (mode) => {
@@ -157,22 +158,25 @@ class App extends Component {
     this.charactersSelected.push(character);
     var success = this.checkAnswer(character);
     var title = "";
+    var attempts = this.state.attempts;
     if (!success) {
-      this.attempts = this.attempts - 1
+      attempts--;
     }
     if (this.gameFinished() === true) {
       title = "Has ganado!";
       this.image = "game_won.png";
       this.showAnswer(VICTORY);
-    } else if (this.attempts > 0) {
-      title = "Te quedan " + this.attempts + " intentos";
+      attempts = 0;
+    } else if (attempts > 0) {
+      title = "Te quedan " + attempts + " intentos";
       this.image = this.setImage();
     } else {
       title = "Has perdido";
       this.image = "game_lost.png";
       this.showAnswer(DEFEAT);
+      attempts = 0;
     }
-    this.setState({ title: title }, this.saveGameData);
+    this.setState({ title: title, attempts: attempts }, this.saveGameData);
   }
 
   checkAnswer(character) {
@@ -203,21 +207,20 @@ class App extends Component {
       totalAttempts = Math.floor(1.5 * totalAttempts);
     }
     var groups = Math.ceil(totalAttempts / 6);
-    var imageID = 6 - Math.floor(this.attempts / groups);
+    var imageID = 6 - Math.floor(this.state.attempts / groups);
     return "hangman" + Math.max(1,imageID) + ".png";
   }
 
   setTimer(timeLeft) {
     this.saveGameTime(timeLeft);
     if (timeLeft === 0) {
-      this.setState({ title: "Has perdido" });
+      this.setState({ title: "Has perdido", attempts: 0 });
       this.image = "game_lost.png";
       this.showAnswer(DEFEAT);
     }
   }
 
   showAnswer(result) {
-    this.attempts = 0;
     this.time = 0;
     this.answer = this.words.map((word, i) => {
       return word.split("").map((c, j) => {
@@ -250,7 +253,7 @@ class App extends Component {
       'charactersSelected': this.charactersSelected
     };
     localStorage.setItem('data-' + this.username, JSON.stringify(data));
-    localStorage.setItem('attempts-' + this.username, this.attempts);
+    localStorage.setItem('attempts-' + this.username, this.state.attempts);
     localStorage.setItem('username', this.username);
   }
 
@@ -284,12 +287,13 @@ class App extends Component {
   //MARK: Función de reinicio el juego
 
   resetBoard() {
+    var attempts = this.initAttempts();
     this.setState({
       restart: !this.state.restart,
       title: "Iniciar partida",
+      attempts: attempts,
     });
     this.generateData();
-    this.initAttempts();
     this.initTime();
     this.saveGameData();
   }
@@ -307,7 +311,7 @@ class App extends Component {
           {this.image !== "" && <GameImage key={this.image} imagePath={this.image}></GameImage>}
           {this.time > 0 && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
           {this.answer.length > 0 && <Answer key={this.answer} movie={this.movie} answer={this.answer}></Answer>}
-          {this.attempts > 0 && <CharactersBox charactersSelected={this.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
+          {this.state.attempts > 0 && <CharactersBox charactersSelected={this.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
         </section>
         <footer>
           <div>
