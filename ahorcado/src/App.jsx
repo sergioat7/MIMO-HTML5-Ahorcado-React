@@ -33,7 +33,8 @@ class App extends Component {
       words: initialState.words,
       answer: initialState.answer,
       image: initialState.image,
-      charactersSelected: initialState.charactersSelected
+      charactersSelected: initialState.charactersSelected,
+      time: initialState.time
     }
     if (initialState.username !== "") {
       this.saveGameData();
@@ -55,14 +56,14 @@ class App extends Component {
     if (username != null) {
       return this.getGameData(username);
     } else {
-      this.time = 0;
       return {
         username: "",
         title: "Escribe tu usuario",
         gameMode: EASY_MODE,
         attempts: 0,
         answer: [],
-        image: ""
+        image: "",
+        time: 0
       };
     }
   }
@@ -75,6 +76,7 @@ class App extends Component {
     var answer;
     var image;
     var charactersSelected;
+    var time;
 
     var data = JSON.parse(localStorage.getItem('data-' + username));
     if (data !== null) {
@@ -104,9 +106,9 @@ class App extends Component {
 
     var timeData = localStorage.getItem('time-' + username);
     if (timeData !== null) {
-      this.time = timeData;
+      time = timeData;
     } else {
-      this.initTime(gameMode, username);
+      time = this.initTime(gameMode, username);
     }
 
     return {
@@ -118,7 +120,8 @@ class App extends Component {
       words: words,
       answer: answer,
       image: image,
-      charactersSelected: charactersSelected
+      charactersSelected: charactersSelected,
+      time: time
     };
   }
 
@@ -166,13 +169,14 @@ class App extends Component {
 
   initTime(mode, username) {
     if (mode === DIFFICULT_MODE) {
-      this.time = 60;
+      var time = 60;
     } else if (mode === MEDIUM_MODE) {
-      this.time = 120;
+      time = 120;
     } else {
-      this.time = 0;
+      time = 0;
     }
-    this.saveGameTime(this.time, username);
+    this.saveGameTime(time, username);
+    return time;
   }
 
   //MARK: Funciones del juego
@@ -197,6 +201,7 @@ class App extends Component {
     var success = answerChecked.success;
     var answer = answerChecked.answer;
     var image;
+    var time = this.state.time;
     if (!success) {
       attempts--;
     }
@@ -206,7 +211,7 @@ class App extends Component {
       var finishData = this.showAnswer(VICTORY, this.state.words);
       answer = finishData.answer;
       attempts = 0;
-      this.time = finishData.time;
+      time = finishData.time;
     } else if (attempts > 0) {
       title = "Te quedan " + attempts + " intentos";
       image = this.setImage(this.state.words);
@@ -216,14 +221,15 @@ class App extends Component {
       finishData = this.showAnswer(DEFEAT, this.state.words);
       answer = finishData.answer;
       attempts = 0;
-      this.time = finishData.time;
+      time = finishData.time;
     }
     this.setState({
       title: title,
       attempts: attempts,
       answer: answer,
       image: image,
-      charactersSelected: charactersSelected
+      charactersSelected: charactersSelected,
+      time: time
     }, this.saveGameData);
   }
 
@@ -269,10 +275,11 @@ class App extends Component {
       var image = "game_lost.png";
       var finishData = this.showAnswer(DEFEAT, this.state.words);
       var answer = finishData.answer;
-      this.time = finishData.time;
+      var time = finishData.time;
       this.setState({
         answer: answer,
-        image: image
+        image: image,
+        time: time
       }, this.saveGameData);
     }
   }
@@ -346,7 +353,7 @@ class App extends Component {
   //MARK: Función de reinicio el juego
 
   resetBoard() {
-    this.initTime(this.state.gameMode, this.state.username);
+    var time = this.initTime(this.state.gameMode, this.state.username);
     var newData = this.generateData();
     var attempts = this.initAttempts(this.state.gameMode, newData.words);
     this.setState({
@@ -357,7 +364,8 @@ class App extends Component {
       words: newData.words,
       answer: newData.answer,
       image: newData.image,
-      charactersSelected: newData.charactersSelected
+      charactersSelected: newData.charactersSelected,
+      time: time
     }, this.saveGameData);
   }
 
@@ -372,7 +380,7 @@ class App extends Component {
         </header>
         <section key={this.state.restart}>
           {this.state.image !== "" && <GameImage key={this.state.image} imagePath={this.state.image}></GameImage>}
-          {this.time > 0 && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
+          {this.state.time > 0 && <Timer key={this.state.time} time={this.state.time} timesUp={this.setTimer}></Timer>}
           {this.state.answer.length > 0 && <Answer key={this.state.answer} movie={this.state.movie} answer={this.state.answer}></Answer>}
           {this.state.attempts > 0 && <CharactersBox charactersSelected={this.state.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
         </section>
