@@ -288,14 +288,13 @@ class App extends Component {
 
   resetBoard() {
     var attempts = this.initAttempts();
+    this.generateData();
+    this.initTime();
     this.setState({
       restart: !this.state.restart,
       title: "Iniciar partida",
       attempts: attempts,
-    });
-    this.generateData();
-    this.initTime();
-    this.saveGameData();
+    }, this.saveGameData);
   }
 
   render() {
