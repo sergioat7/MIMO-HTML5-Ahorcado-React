@@ -29,7 +29,8 @@ class App extends Component {
       title: initialState.title,
       gameMode: initialState.gameMode,
       attempts: initialState.attempts,
-      movie: initialState.movie
+      movie: initialState.movie,
+      words: initialState.words
     }
     if (initialState.username !== "") {
       this.saveGameData();
@@ -62,19 +63,21 @@ class App extends Component {
     var title = "Iniciar partida";
     var gameMode = EASY_MODE;
     var movie;
+    var words;
 
     var data = JSON.parse(localStorage.getItem('data-' + username));
     if (data !== null) {
       title = data.title;
       gameMode = data.gameMode;
       movie = data.movie;
-      this.words = movie.split(" ");
+      words = movie.split(" ");
       this.answer = data.answer;
       this.image = data.image;
       this.charactersSelected = data.charactersSelected;
     } else {
       var newData = this.generateData();
       movie = newData.movie;
+      words = newData.words;
     }
     
     var attempts = 0;
@@ -82,7 +85,7 @@ class App extends Component {
     if (attemptsStorage !== null) {
       attempts = parseInt(attemptsStorage);
     } else {
-      attempts = this.initAttempts(gameMode);
+      attempts = this.initAttempts(gameMode, words);
     }
 
     var timeData = localStorage.getItem('time-' + username);
@@ -92,7 +95,7 @@ class App extends Component {
       this.initTime(gameMode, username);
     }
 
-    return { username: username, title: title, gameMode: gameMode, attempts: attempts, movie: movie };
+    return { username: username, title: title, gameMode: gameMode, attempts: attempts, movie: movie, words: words };
   }
 
   getRankingList() {
@@ -112,19 +115,19 @@ class App extends Component {
 
   getMovie() {
     var movie = movies[Math.floor(Math.random() * movies.length)];
-    this.words = movie.split(" ");
-    this.answer = this.words.map((word) => {
+    var words = movie.split(" ");
+    this.answer = words.map((word) => {
       return word.split("").map(() => {
         return "-";
       });
     });
     this.charactersSelected = [];
-    return { movie: movie };
+    return { movie: movie, words: words };
   }
 
-  initAttempts(mode) {
+  initAttempts(mode, words) {
     var attempts = 0;
-    for (let word of this.words) {
+    for (let word of words) {
       attempts += word.length;
     }
     if (mode === DIFFICULT_MODE) {
@@ -163,7 +166,7 @@ class App extends Component {
 
   selectCharacter = (character) => {
     this.charactersSelected.push(character);
-    var success = this.checkAnswer(character);
+    var success = this.checkAnswer(character, this.state.words);
     var title = "";
     var attempts = this.state.attempts;
     if (!success) {
@@ -172,23 +175,23 @@ class App extends Component {
     if (this.gameFinished() === true) {
       title = "Has ganado!";
       this.image = "game_won.png";
-      this.showAnswer(VICTORY);
+      this.showAnswer(VICTORY, this.state.words);
       attempts = 0;
     } else if (attempts > 0) {
       title = "Te quedan " + attempts + " intentos";
-      this.image = this.setImage();
+      this.image = this.setImage(this.state.words);
     } else {
       title = "Has perdido";
       this.image = "game_lost.png";
-      this.showAnswer(DEFEAT);
+      this.showAnswer(DEFEAT, this.state.words);
       attempts = 0;
     }
     this.setState({ title: title, attempts: attempts }, this.saveGameData);
   }
 
-  checkAnswer(character) {
+  checkAnswer(character, words) {
     var success = false;
-    this.answer = this.words.map((word, i) => {
+    this.answer = words.map((word, i) => {
       return word.split("").map((c, j) => {
         if (c === character) {
           success = true;
@@ -201,9 +204,9 @@ class App extends Component {
     return success
   }
 
-  setImage() {
+  setImage(words) {
     var totalAttempts = 0;
-    for (let word of this.words) {
+    for (let word of words) {
       totalAttempts += word.length;
     }
     if (this.state.gameMode === DIFFICULT_MODE) {
@@ -223,13 +226,13 @@ class App extends Component {
     if (timeLeft === 0) {
       this.setState({ title: "Has perdido", attempts: 0 });
       this.image = "game_lost.png";
-      this.showAnswer(DEFEAT);
+      this.showAnswer(DEFEAT, this.state.words);
     }
   }
 
-  showAnswer(result) {
+  showAnswer(result, words) {
     this.time = 0;
-    this.answer = this.words.map((word, i) => {
+    this.answer = words.map((word, i) => {
       return word.split("").map((c, j) => {
         return c;
       });
@@ -294,14 +297,15 @@ class App extends Component {
   //MARK: Función de reinicio el juego
 
   resetBoard() {
-    var attempts = this.initAttempts(this.state.gameMode);
-    var newData = this.generateData();
     this.initTime(this.state.gameMode, this.state.username);
+    var newData = this.generateData();
+    var attempts = this.initAttempts(this.state.gameMode, newData.words);
     this.setState({
       restart: !this.state.restart,
       title: "Iniciar partida",
       attempts: attempts,
-      movie: newData.movie
+      movie: newData.movie,
+      words: newData.words
     }, this.saveGameData);
   }
 
