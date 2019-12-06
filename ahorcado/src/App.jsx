@@ -32,6 +32,7 @@ class App extends Component {
       movie: initialState.movie,
       words: initialState.words,
       answer: initialState.answer,
+      image: initialState.image,
       charactersSelected: initialState.charactersSelected
     }
     if (initialState.username !== "") {
@@ -54,9 +55,15 @@ class App extends Component {
     if (username != null) {
       return this.getGameData(username);
     } else {
-      this.image = "";
       this.time = 0;
-      return { username: "", title: "Escribe tu usuario", gameMode: EASY_MODE, attempts: 0, answer: [] };
+      return {
+        username: "",
+        title: "Escribe tu usuario",
+        gameMode: EASY_MODE,
+        attempts: 0,
+        answer: [],
+        image: ""
+      };
     }
   }
 
@@ -66,6 +73,7 @@ class App extends Component {
     var movie;
     var words;
     var answer;
+    var image;
     var charactersSelected;
 
     var data = JSON.parse(localStorage.getItem('data-' + username));
@@ -75,13 +83,14 @@ class App extends Component {
       movie = data.movie;
       words = movie.split(" ");
       answer = data.answer;
-      this.image = data.image;
+      image = data.image;
       charactersSelected = data.charactersSelected;
     } else {
       var newData = this.generateData();
       movie = newData.movie;
       words = newData.words;
       answer = newData.answer;
+      image = newData.image;
       charactersSelected = newData.charactersSelected;
     }
 
@@ -108,6 +117,7 @@ class App extends Component {
       movie: movie,
       words: words,
       answer: answer,
+      image: image,
       charactersSelected: charactersSelected
     };
   }
@@ -123,11 +133,6 @@ class App extends Component {
   //MARK: Generación inicial de datos
 
   generateData() {
-    this.image = "hangman1.png";
-    return this.getMovie();
-  }
-
-  getMovie() {
     var movie = movies[Math.floor(Math.random() * movies.length)];
     var words = movie.split(" ");
     var answer = words.map((word) => {
@@ -139,6 +144,7 @@ class App extends Component {
       movie: movie,
       words: words,
       answer: answer,
+      image: "hangman1.png",
       charactersSelected: []
     };
   }
@@ -190,28 +196,35 @@ class App extends Component {
     var answerChecked = this.checkAnswer(character, this.state.words);
     var success = answerChecked.success;
     var answer = answerChecked.answer;
+    var image;
     if (!success) {
       attempts--;
     }
-    if (this.gameFinished(answer) === true) {
+    if (this.isGameFinished(answer) === true) {
       title = "Has ganado!";
-      this.image = "game_won.png";
+      image = "game_won.png";
       var finishData = this.showAnswer(VICTORY, this.state.words);
       answer = finishData.answer;
       attempts = 0;
       this.time = finishData.time;
     } else if (attempts > 0) {
       title = "Te quedan " + attempts + " intentos";
-      this.image = this.setImage(this.state.words);
+      image = this.setImage(this.state.words);
     } else {
       title = "Has perdido";
-      this.image = "game_lost.png";
+      image = "game_lost.png";
       finishData = this.showAnswer(DEFEAT, this.state.words);
       answer = finishData.answer;
       attempts = 0;
       this.time = finishData.time;
     }
-    this.setState({ title: title, attempts: attempts, answer: answer, charactersSelected: charactersSelected }, this.saveGameData);
+    this.setState({
+      title: title,
+      attempts: attempts,
+      answer: answer,
+      image: image,
+      charactersSelected: charactersSelected
+    }, this.saveGameData);
   }
 
   checkAnswer(character, words) {
@@ -226,7 +239,10 @@ class App extends Component {
         }
       });
     });
-    return { success: success, answer: answer };
+    return {
+      success: success,
+      answer: answer
+    };
   }
 
   setImage(words) {
@@ -250,11 +266,14 @@ class App extends Component {
     this.saveGameTime(timeLeft, this.state.username);
     if (timeLeft === 0) {
       this.setState({ title: "Has perdido", attempts: 0 });
-      this.image = "game_lost.png";
+      var image = "game_lost.png";
       var finishData = this.showAnswer(DEFEAT, this.state.words);
       var answer = finishData.answer;
       this.time = finishData.time;
-      this.setState({ answer: answer }, this.saveGameData);
+      this.setState({
+        answer: answer,
+        image: image
+      }, this.saveGameData);
     }
   }
 
@@ -265,10 +284,13 @@ class App extends Component {
       });
     });
     this.saveRanking(result);
-    return { answer: answer, time: 0 };
+    return {
+      answer: answer,
+      time: 0
+    };
   }
 
-  gameFinished(answer) {
+  isGameFinished(answer) {
     var gameFinished = true;
     for (let word of answer) {
       for (let character of word) {
@@ -286,7 +308,7 @@ class App extends Component {
       'gameMode': this.state.gameMode,
       'movie': this.state.movie,
       'answer': this.state.answer,
-      'image': this.image,
+      'image': this.state.image,
       'charactersSelected': this.state.charactersSelected
     };
     localStorage.setItem('data-' + this.state.username, JSON.stringify(data));
@@ -334,6 +356,7 @@ class App extends Component {
       movie: newData.movie,
       words: newData.words,
       answer: newData.answer,
+      image: newData.image,
       charactersSelected: newData.charactersSelected
     }, this.saveGameData);
   }
@@ -348,7 +371,7 @@ class App extends Component {
           <h4 id="title">{this.state.title}</h4>
         </header>
         <section key={this.state.restart}>
-          {this.image !== "" && <GameImage key={this.image} imagePath={this.image}></GameImage>}
+          {this.state.image !== "" && <GameImage key={this.state.image} imagePath={this.state.image}></GameImage>}
           {this.time > 0 && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
           {this.state.answer.length > 0 && <Answer key={this.state.answer} movie={this.state.movie} answer={this.state.answer}></Answer>}
           {this.state.attempts > 0 && <CharactersBox charactersSelected={this.state.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
