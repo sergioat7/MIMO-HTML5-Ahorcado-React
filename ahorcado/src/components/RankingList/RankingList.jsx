@@ -18,7 +18,7 @@ class RankingList extends Component {
                 {this.props.rankingList.map((user, index) => {
                     return (
                         <tr key={user.username}>
-                            <th scope="row">{index}</th>
+                            <th scope="row">{index+1}</th>
                             <td>{user.username}</td>
                             <td>{user.victories}</td>
                             <td>{user.defeats}</td>

@@ -26,6 +26,7 @@ class App extends Component {
     this.state = {
       restart: true,
       title: initialState.title,
+      gameMode: initialState.gameMode,
       attempts: initialState.attempts,
     }
     if (this.username !== "") {
@@ -50,43 +51,46 @@ class App extends Component {
       return this.getGameData();
     } else {
       this.username = "";
-      this.gameMode = EASY_MODE;
       this.answer = [];
       this.image = "";
       this.time = 0;
-      return { title: "Escribe tu usuario", attempts: 0 };
+      return { title: "Escribe tu usuario", gameMode: EASY_MODE, attempts: 0 };
     }
   }
 
   getGameData() {
     var title = "Iniciar partida";
+    var gameMode = EASY_MODE;
+
     var data = JSON.parse(localStorage.getItem('data-' + this.username));
     if (data !== null) {
       title = data.title;
-      this.gameMode = data.gameMode;
+      gameMode = data.gameMode;
       this.movie = data.movie;
       this.words = this.movie.split(" ");
       this.answer = data.answer;
       this.image = data.image;
       this.charactersSelected = data.charactersSelected;
     } else {
-      this.gameMode = EASY_MODE;
       this.generateData();
     }
+    
     var attempts = 0;
     var attemptsStorage = localStorage.getItem('attempts-' + this.username);
     if (attemptsStorage !== null) {
       attempts = parseInt(attemptsStorage);
     } else {
-      attempts = this.initAttempts();
+      attempts = this.initAttempts(gameMode);
     }
+
     var timeData = localStorage.getItem('timeData-' + this.username);
     if (timeData !== null) {
       this.time = timeData;
     } else {
-      this.initTime();
+      this.initTime(gameMode);
     }
-    return { title: title, attempts: attempts };
+
+    return { title: title, gameMode: gameMode, attempts: attempts };
   }
 
   getRankingList() {
@@ -115,14 +119,14 @@ class App extends Component {
     this.charactersSelected = [];
   }
 
-  initAttempts() {
+  initAttempts(mode) {
     var attempts = 0;
     for (let word of this.words) {
       attempts += word.length;
     }
-    if (this.gameMode === DIFFICULT_MODE) {
+    if (mode === DIFFICULT_MODE) {
       attempts = Math.floor(0.8 * attempts);
-    } else if (this.gameMode === MEDIUM_MODE) {
+    } else if (mode === MEDIUM_MODE) {
       attempts = Math.floor(attempts);
     } else {
       attempts = Math.floor(1.5 * attempts);
@@ -130,10 +134,10 @@ class App extends Component {
     return attempts;
   }
 
-  initTime() {
-    if (this.gameMode === DIFFICULT_MODE) {
+  initTime(mode) {
+    if (mode === DIFFICULT_MODE) {
       this.time = 60;
-    } else if (this.gameMode === MEDIUM_MODE) {
+    } else if (mode === MEDIUM_MODE) {
       this.time = 120;
     } else {
       this.time = 0;
@@ -150,8 +154,9 @@ class App extends Component {
   }
 
   setGameMode = (mode) => {
-    this.gameMode = mode;
-    this.resetBoard();
+    this.setState({
+      gameMode: mode
+    }, this.resetBoard);
   }
 
   selectCharacter = (character) => {
@@ -199,9 +204,9 @@ class App extends Component {
     for (let word of this.words) {
       totalAttempts += word.length;
     }
-    if (this.gameMode === DIFFICULT_MODE) {
+    if (this.state.gameMode === DIFFICULT_MODE) {
       totalAttempts = Math.floor(0.8 * totalAttempts);
-    } else if (this.gameMode === MEDIUM_MODE) {
+    } else if (this.state.gameMode === MEDIUM_MODE) {
       totalAttempts = Math.floor(totalAttempts);
     } else {
       totalAttempts = Math.floor(1.5 * totalAttempts);
@@ -246,7 +251,7 @@ class App extends Component {
   saveGameData() {
     var data = {
       'title': this.state.title,
-      'gameMode': this.gameMode,
+      'gameMode': this.state.gameMode,
       'movie': this.movie,
       'answer': this.answer,
       'image': this.image,
@@ -287,9 +292,9 @@ class App extends Component {
   //MARK: Función de reinicio el juego
 
   resetBoard() {
-    var attempts = this.initAttempts();
+    var attempts = this.initAttempts(this.state.gameMode);
     this.generateData();
-    this.initTime();
+    this.initTime(this.state.gameMode);
     this.setState({
       restart: !this.state.restart,
       title: "Iniciar partida",
@@ -303,7 +308,7 @@ class App extends Component {
         <header>
           <h1>El Ahorcado</h1>
           <UsernameInput username={this.username} changeUsername={this.changeUsername}></UsernameInput>
-          {this.username !== "" && <GameSelector key={this.gameMode} gameMode={this.gameMode} setGameMode={this.setGameMode}></GameSelector>}
+          {this.username !== "" && <GameSelector key={this.state.gameMode} gameMode={this.state.gameMode} setGameMode={this.setGameMode}></GameSelector>}
           <h4 id="title">{this.state.title}</h4>
         </header>
         <section key={this.state.restart}>
