@@ -29,6 +29,7 @@ class App extends Component {
       title: initialState.title,
       gameMode: initialState.gameMode,
       attempts: initialState.attempts,
+      movie: initialState.movie
     }
     if (initialState.username !== "") {
       this.saveGameData();
@@ -60,18 +61,20 @@ class App extends Component {
   getGameData(username) {
     var title = "Iniciar partida";
     var gameMode = EASY_MODE;
+    var movie;
 
     var data = JSON.parse(localStorage.getItem('data-' + username));
     if (data !== null) {
       title = data.title;
       gameMode = data.gameMode;
-      this.movie = data.movie;
-      this.words = this.movie.split(" ");
+      movie = data.movie;
+      this.words = movie.split(" ");
       this.answer = data.answer;
       this.image = data.image;
       this.charactersSelected = data.charactersSelected;
     } else {
-      this.generateData();
+      var newData = this.generateData();
+      movie = newData.movie;
     }
     
     var attempts = 0;
@@ -89,7 +92,7 @@ class App extends Component {
       this.initTime(gameMode, username);
     }
 
-    return { username: username, title: title, gameMode: gameMode, attempts: attempts };
+    return { username: username, title: title, gameMode: gameMode, attempts: attempts, movie: movie };
   }
 
   getRankingList() {
@@ -103,19 +106,20 @@ class App extends Component {
   //MARK: Generación inicial de datos
 
   generateData() {
-    this.getMovie();
     this.image = "hangman1.png";
+    return this.getMovie();
   }
 
   getMovie() {
-    this.movie = movies[Math.floor(Math.random() * movies.length)];
-    this.words = this.movie.split(" ");
+    var movie = movies[Math.floor(Math.random() * movies.length)];
+    this.words = movie.split(" ");
     this.answer = this.words.map((word) => {
       return word.split("").map(() => {
         return "-";
       });
     });
     this.charactersSelected = [];
+    return { movie: movie };
   }
 
   initAttempts(mode) {
@@ -250,7 +254,7 @@ class App extends Component {
     var data = {
       'title': this.state.title,
       'gameMode': this.state.gameMode,
-      'movie': this.movie,
+      'movie': this.state.movie,
       'answer': this.answer,
       'image': this.image,
       'charactersSelected': this.charactersSelected
@@ -291,12 +295,13 @@ class App extends Component {
 
   resetBoard() {
     var attempts = this.initAttempts(this.state.gameMode);
-    this.generateData();
+    var newData = this.generateData();
     this.initTime(this.state.gameMode, this.state.username);
     this.setState({
       restart: !this.state.restart,
       title: "Iniciar partida",
       attempts: attempts,
+      movie: newData.movie
     }, this.saveGameData);
   }
 
@@ -312,7 +317,7 @@ class App extends Component {
         <section key={this.state.restart}>
           {this.image !== "" && <GameImage key={this.image} imagePath={this.image}></GameImage>}
           {this.time > 0 && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
-          {this.answer.length > 0 && <Answer key={this.answer} movie={this.movie} answer={this.answer}></Answer>}
+          {this.answer.length > 0 && <Answer key={this.answer} movie={this.state.movie} answer={this.answer}></Answer>}
           {this.state.attempts > 0 && <CharactersBox charactersSelected={this.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
         </section>
         <footer>
