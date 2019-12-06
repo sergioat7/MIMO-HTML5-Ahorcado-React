@@ -30,7 +30,8 @@ class App extends Component {
       gameMode: initialState.gameMode,
       attempts: initialState.attempts,
       movie: initialState.movie,
-      words: initialState.words
+      words: initialState.words,
+      charactersSelected: initialState.charactersSelected
     }
     if (initialState.username !== "") {
       this.saveGameData();
@@ -64,6 +65,7 @@ class App extends Component {
     var gameMode = EASY_MODE;
     var movie;
     var words;
+    var charactersSelected;
 
     var data = JSON.parse(localStorage.getItem('data-' + username));
     if (data !== null) {
@@ -73,11 +75,12 @@ class App extends Component {
       words = movie.split(" ");
       this.answer = data.answer;
       this.image = data.image;
-      this.charactersSelected = data.charactersSelected;
+      charactersSelected = data.charactersSelected;
     } else {
       var newData = this.generateData();
       movie = newData.movie;
       words = newData.words;
+      charactersSelected = newData.charactersSelected;
     }
     
     var attempts = 0;
@@ -95,7 +98,7 @@ class App extends Component {
       this.initTime(gameMode, username);
     }
 
-    return { username: username, title: title, gameMode: gameMode, attempts: attempts, movie: movie, words: words };
+    return { username: username, title: title, gameMode: gameMode, attempts: attempts, movie: movie, words: words, charactersSelected: charactersSelected };
   }
 
   getRankingList() {
@@ -121,8 +124,7 @@ class App extends Component {
         return "-";
       });
     });
-    this.charactersSelected = [];
-    return { movie: movie, words: words };
+    return { movie: movie, words: words, charactersSelected: [] };
   }
 
   initAttempts(mode, words) {
@@ -165,7 +167,8 @@ class App extends Component {
   }
 
   selectCharacter = (character) => {
-    this.charactersSelected.push(character);
+    var charactersSelected = this.state.charactersSelected;
+    charactersSelected.push(character);
     var success = this.checkAnswer(character, this.state.words);
     var title = "";
     var attempts = this.state.attempts;
@@ -186,7 +189,7 @@ class App extends Component {
       this.showAnswer(DEFEAT, this.state.words);
       attempts = 0;
     }
-    this.setState({ title: title, attempts: attempts }, this.saveGameData);
+    this.setState({ title: title, attempts: attempts, charactersSelected: charactersSelected }, this.saveGameData);
   }
 
   checkAnswer(character, words) {
@@ -260,7 +263,7 @@ class App extends Component {
       'movie': this.state.movie,
       'answer': this.answer,
       'image': this.image,
-      'charactersSelected': this.charactersSelected
+      'charactersSelected': this.state.charactersSelected
     };
     localStorage.setItem('data-' + this.state.username, JSON.stringify(data));
     localStorage.setItem('attempts-' + this.state.username, this.state.attempts);
@@ -305,7 +308,8 @@ class App extends Component {
       title: "Iniciar partida",
       attempts: attempts,
       movie: newData.movie,
-      words: newData.words
+      words: newData.words,
+      charactersSelected: newData.charactersSelected
     }, this.saveGameData);
   }
 
@@ -322,7 +326,7 @@ class App extends Component {
           {this.image !== "" && <GameImage key={this.image} imagePath={this.image}></GameImage>}
           {this.time > 0 && <Timer key={this.time} time={this.time} timesUp={this.setTimer}></Timer>}
           {this.answer.length > 0 && <Answer key={this.answer} movie={this.state.movie} answer={this.answer}></Answer>}
-          {this.state.attempts > 0 && <CharactersBox charactersSelected={this.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
+          {this.state.attempts > 0 && <CharactersBox charactersSelected={this.state.charactersSelected} selectCharacter={this.selectCharacter}></CharactersBox>}
         </section>
         <footer>
           <div>
