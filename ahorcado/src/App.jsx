@@ -25,11 +25,12 @@ class App extends Component {
     var initialState = this.getUsername();
     this.state = {
       restart: true,
+      username: initialState.username,
       title: initialState.title,
       gameMode: initialState.gameMode,
       attempts: initialState.attempts,
     }
-    if (this.username !== "") {
+    if (initialState.username !== "") {
       this.saveGameData();
     }
     this.getRankingList();
@@ -47,22 +48,20 @@ class App extends Component {
   getUsername() {
     var username = localStorage.getItem('username');
     if (username != null) {
-      this.username = username;
-      return this.getGameData();
+      return this.getGameData(username);
     } else {
-      this.username = "";
       this.answer = [];
       this.image = "";
       this.time = 0;
-      return { title: "Escribe tu usuario", gameMode: EASY_MODE, attempts: 0 };
+      return { username: "", title: "Escribe tu usuario", gameMode: EASY_MODE, attempts: 0 };
     }
   }
 
-  getGameData() {
+  getGameData(username) {
     var title = "Iniciar partida";
     var gameMode = EASY_MODE;
 
-    var data = JSON.parse(localStorage.getItem('data-' + this.username));
+    var data = JSON.parse(localStorage.getItem('data-' + username));
     if (data !== null) {
       title = data.title;
       gameMode = data.gameMode;
@@ -76,21 +75,21 @@ class App extends Component {
     }
     
     var attempts = 0;
-    var attemptsStorage = localStorage.getItem('attempts-' + this.username);
+    var attemptsStorage = localStorage.getItem('attempts-' + username);
     if (attemptsStorage !== null) {
       attempts = parseInt(attemptsStorage);
     } else {
       attempts = this.initAttempts(gameMode);
     }
 
-    var timeData = localStorage.getItem('timeData-' + this.username);
+    var timeData = localStorage.getItem('time-' + username);
     if (timeData !== null) {
       this.time = timeData;
     } else {
-      this.initTime(gameMode);
+      this.initTime(gameMode, username);
     }
 
-    return { title: title, gameMode: gameMode, attempts: attempts };
+    return { username: username, title: title, gameMode: gameMode, attempts: attempts };
   }
 
   getRankingList() {
@@ -134,7 +133,7 @@ class App extends Component {
     return attempts;
   }
 
-  initTime(mode) {
+  initTime(mode, username) {
     if (mode === DIFFICULT_MODE) {
       this.time = 60;
     } else if (mode === MEDIUM_MODE) {
@@ -142,15 +141,14 @@ class App extends Component {
     } else {
       this.time = 0;
     }
-    this.saveGameTime(this.time);
+    this.saveGameTime(this.time, username);
   }
 
   //MARK: Funciones del juego
 
   changeUsername(username) {
-    this.username = username;
-    localStorage.setItem('username', this.username);
-    this.setState(this.getGameData());
+    localStorage.setItem('username', username);
+    this.setState(this.getGameData(username));
   }
 
   setGameMode = (mode) => {
@@ -217,7 +215,7 @@ class App extends Component {
   }
 
   setTimer(timeLeft) {
-    this.saveGameTime(timeLeft);
+    this.saveGameTime(timeLeft, this.state.username);
     if (timeLeft === 0) {
       this.setState({ title: "Has perdido", attempts: 0 });
       this.image = "game_lost.png";
@@ -257,9 +255,9 @@ class App extends Component {
       'image': this.image,
       'charactersSelected': this.charactersSelected
     };
-    localStorage.setItem('data-' + this.username, JSON.stringify(data));
-    localStorage.setItem('attempts-' + this.username, this.state.attempts);
-    localStorage.setItem('username', this.username);
+    localStorage.setItem('data-' + this.state.username, JSON.stringify(data));
+    localStorage.setItem('attempts-' + this.state.username, this.state.attempts);
+    localStorage.setItem('username', this.state.username);
   }
 
   saveRanking(result) {
@@ -268,25 +266,25 @@ class App extends Component {
       ranking = [];
     }
     var userData = {
-      'username': this.username,
+      'username': this.state.username,
       'victories': result === VICTORY ? 1 : 0,
       'defeats': result === DEFEAT ? 1 : 0
     };
     ranking = ranking.filter((r) => {
-      if (r.username === this.username) {
+      if (r.username === this.state.username) {
         userData = r;
         if (result === VICTORY) { userData.victories++; }
         if (result === DEFEAT) { userData.defeats++; }
       }
-      return r.username !== this.username;
+      return r.username !== this.state.username;
     });
     ranking.push(userData);
     localStorage.setItem('ranking', JSON.stringify(ranking));
     this.rankingList = ranking;
   }
 
-  saveGameTime(timeLeft) {
-    localStorage.setItem('time-' + this.username, timeLeft);
+  saveGameTime(timeLeft, username) {
+    localStorage.setItem('time-' + username, timeLeft);
   }
 
   //MARK: Función de reinicio el juego
@@ -294,7 +292,7 @@ class App extends Component {
   resetBoard() {
     var attempts = this.initAttempts(this.state.gameMode);
     this.generateData();
-    this.initTime(this.state.gameMode);
+    this.initTime(this.state.gameMode, this.state.username);
     this.setState({
       restart: !this.state.restart,
       title: "Iniciar partida",
@@ -307,8 +305,8 @@ class App extends Component {
       <div className="App">
         <header>
           <h1>El Ahorcado</h1>
-          <UsernameInput username={this.username} changeUsername={this.changeUsername}></UsernameInput>
-          {this.username !== "" && <GameSelector key={this.state.gameMode} gameMode={this.state.gameMode} setGameMode={this.setGameMode}></GameSelector>}
+          <UsernameInput username={this.state.username} changeUsername={this.changeUsername}></UsernameInput>
+          {this.state.username !== "" && <GameSelector key={this.state.gameMode} gameMode={this.state.gameMode} setGameMode={this.setGameMode}></GameSelector>}
           <h4 id="title">{this.state.title}</h4>
         </header>
         <section key={this.state.restart}>
@@ -319,7 +317,7 @@ class App extends Component {
         </section>
         <footer>
           <div>
-            {this.username !== "" && <button className="btn btn-warning" name="restart_game" type="button" onClick={this.resetBoard}>Reiniciar partida</button>}
+            {this.state.username !== "" && <button className="btn btn-warning" name="restart_game" type="button" onClick={this.resetBoard}>Reiniciar partida</button>}
           </div>
           <RankingList key={this.rankingList} rankingList={this.rankingList}></RankingList>
         </footer>
