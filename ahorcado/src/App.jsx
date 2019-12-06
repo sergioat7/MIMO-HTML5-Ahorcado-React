@@ -23,6 +23,7 @@ class App extends Component {
     super(props);
 
     var initialState = this.getUsername();
+    var rankingList = this.getRankingList();
     this.state = {
       restart: true,
       username: initialState.username,
@@ -34,12 +35,12 @@ class App extends Component {
       answer: initialState.answer,
       image: initialState.image,
       charactersSelected: initialState.charactersSelected,
-      time: initialState.time
+      time: initialState.time,
+      rankingList: rankingList
     }
     if (initialState.username !== "") {
       this.saveGameData();
     }
-    this.getRankingList();
 
     this.changeUsername = this.changeUsername.bind(this);
     this.saveGameData = this.saveGameData.bind(this);
@@ -130,7 +131,7 @@ class App extends Component {
     if (ranking === null) {
       ranking = [];
     }
-    this.rankingList = ranking;
+    return ranking;
   }
 
   //MARK: Generación inicial de datos
@@ -343,7 +344,7 @@ class App extends Component {
     });
     ranking.push(userData);
     localStorage.setItem('ranking', JSON.stringify(ranking));
-    this.rankingList = ranking;
+    this.setState({ rankingList: ranking });
   }
 
   saveGameTime(timeLeft, username) {
@@ -388,7 +389,7 @@ class App extends Component {
           <div>
             {this.state.username !== "" && <button className="btn btn-warning" name="restart_game" type="button" onClick={this.resetBoard}>Reiniciar partida</button>}
           </div>
-          <RankingList key={this.rankingList} rankingList={this.rankingList}></RankingList>
+          <RankingList key={this.state.rankingList} rankingList={this.state.rankingList}></RankingList>
         </footer>
       </div>
     );
