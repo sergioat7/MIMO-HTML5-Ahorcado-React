@@ -4,13 +4,13 @@ HANGMAN game created with React
 
 - There are 3 game difficulties, according to the number of times you can fail and the time you have to solve it:
 	1. Easy.
-        * Attemtps: 1,5 times the number of letters.
+        * Attempts: 1,5 times the number of letters.
         * Time to solve: no limit.
 	2. Medium.
-        * Attemtps: as many as letters.
+        * Attempts: as many as letters.
         * Time to solve: 2 minutes.
 	3. Difficult.
-        * Attemtps: 0,8 times the number of letters.
+        * Attempts: 0,8 times the number of letters.
         * Time to solve: 1 minute.
 
 - The player will introduce a letter for each attempt:
